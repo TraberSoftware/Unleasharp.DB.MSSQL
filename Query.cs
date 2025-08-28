@@ -23,7 +23,35 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
     public const string FieldDelimiterEnd  = "]";
     public const string ValueDelimiter     = "'";
 
+    public string QueryOutputInserted { get; protected set; }
+
     #region Public query building methods overrides
+    public override Query Into<TableClass>() {
+        foreach (MemberInfo member in typeof(TableClass).GetMembers()) {
+            Column column = member.GetCustomAttribute<Column>();
+            if (column != null) {
+                if (column.PrimaryKey) {
+                    this.QueryOutputInserted = column.Name;
+                }
+            }
+        }
+
+        return base.Into<TableClass>();
+    }
+
+    public override Query From<TableClass>() {
+        foreach (MemberInfo member in typeof(TableClass).GetMembers()) {
+            Column column = member.GetCustomAttribute<Column>();
+            if (column != null) {
+                if (column.PrimaryKey) {
+                    this.QueryOutputInserted = column.Name;
+                }
+            }
+        }
+
+        return base.From<TableClass>();
+    }
+
     public override Query Set<T>(Expression<Func<T, object>> expression, dynamic value, bool escape = true) {
         Type   tableType         = typeof(T);
         string dbColumnName      = ExpressionHelper.ExtractColumnName<T>(expression);
@@ -441,7 +469,10 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
         From<Query> from = this.QueryFrom.FirstOrDefault();
 
         if (from != null) {
-            return $"INSERT INTO {from.Table} ({string.Join(',', this.QueryColumns)})";
+            return 
+                $"INSERT INTO {from.Table} ({string.Join(',', this.QueryColumns)})" +
+                ((!string.IsNullOrWhiteSpace(QueryOutputInserted) ? $" OUTPUT INSERTED.{QueryOutputInserted}" : ""))
+            ;
         }
 
         return string.Empty;
@@ -481,7 +512,7 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
             }
         }
 
-        return (rendered.Count > 0 ? "VALUES " + string.Join(',', rendered) : "");
+        return (rendered.Count > 0 ? $"VALUES {string.Join(',', rendered)}" : "");
     }
 
     protected override string _RenderCreateSentence<T>() {
@@ -556,14 +587,14 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
             if (!this.__TableHasPrimaryKeyColumn(tableType)) {
                 definitions.Add(
                     $"CONSTRAINT {Query.FieldDelimiterInit}pk_{pKey.Name}{Query.FieldDelimiterEnd} PRIMARY KEY" +
-                    $"({string.Join(", ", pKey.Columns.Select(column => $"{Query.FieldDelimiterInit}{this._GetKeyColumnName(tableType, column)}{Query.FieldDelimiterEnd}"))})"
+                    $"({string.Join(", ", pKey.Columns.Select(column => $"{Query.FieldDelimiterInit}{tableType.GetColumnName(column)}{Query.FieldDelimiterEnd}"))})"
                 );
             }
         }
         foreach (UniqueKey uKey in tableType.GetCustomAttributes<UniqueKey>()) {
             definitions.Add(
                 $"CONSTRAINT {Query.FieldDelimiterInit}uk_{uKey.Name}{Query.FieldDelimiterEnd} UNIQUE " +
-                $"({string.Join(", ", uKey.Columns.Select(column => $"{Query.FieldDelimiterInit}{this._GetKeyColumnName(tableType, column)}{Query.FieldDelimiterEnd}"))})"
+                $"({string.Join(", ", uKey.Columns.Select(column => $"{Query.FieldDelimiterInit}{tableType.GetColumnName(column)}{Query.FieldDelimiterEnd}"))})"
             );
         }
         foreach (ForeignKey fKey in tableType.GetCustomAttributes<ForeignKey>()) {
