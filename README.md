@@ -1,4 +1,4 @@
-﻿# 💾 Unleasharp.DB.MSSQL
+﻿# 📊 Unleasharp.DB.MSSQL
 
 [![NuGet version (Unleasharp.DB.MSSQL)](https://img.shields.io/nuget/v/Unleasharp.DB.MSSQL.svg?style=flat-square)](https://www.nuget.org/packages/Unleasharp.DB.MSSQL/)
 [![GitHub Wiki](https://img.shields.io/badge/Wiki-Documentation-blue)](https://github.com/TraberSoftware/Unleasharp.DB.Base/wiki)
@@ -23,7 +23,7 @@ dotnet add package Unleasharp.DB.MSSQL
 
 ### PackageReference (Manual)
 ```xml
-<PackageReference Include="Unleasharp.DB.MSSQL" Version="1.5.0" />
+<PackageReference Include="Unleasharp.DB.MSSQL" Version="1.5.2" />
 ```
 
 ## 🎯 Features

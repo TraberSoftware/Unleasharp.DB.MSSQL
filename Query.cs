@@ -16,6 +16,8 @@ using Unleasharp.ExtensionMethods;
 namespace Unleasharp.DB.MSSQL;
 
 public class Query : Unleasharp.DB.Base.Query<Query> {
+    protected override DatabaseEngine _Engine { get { return DatabaseEngine.MSSQL; } }
+
     #region Custom MSSQL query data
     #endregion
 
