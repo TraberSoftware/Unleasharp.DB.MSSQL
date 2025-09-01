@@ -87,12 +87,15 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
         }
 
         SqlParameter param = this.__GetMemberInfoSqlParameter(value, member);
+        if (param != null) {
+            return this.Set(new Where<Query> {
+                Field       = new FieldSelector(dbColumnName),
+                Value       = param,
+                EscapeValue = true
+            });
+        }
 
-        return this.Set(new Where<Query> {
-            Field       = new FieldSelector(dbColumnName),
-            Value       = param,
-            EscapeValue = true
-        });
+        return this;
     }
 
     /// <inheritdoc/>
@@ -103,10 +106,16 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
             List<SqlParameter> rowValues = new List<SqlParameter>();
 
             foreach (FieldInfo field in rowType.GetFields()) {
-                rowValues.Add(this.__GetMemberInfoSqlParameter(field.GetValue(row), field));
+                SqlParameter parameter = this.__GetMemberInfoSqlParameter(field.GetValue(row), field);
+                if (parameter != null) {
+                    rowValues.Add(parameter);
+                }
             }
             foreach (PropertyInfo property in rowType.GetProperties()) {
-                rowValues.Add(this.__GetMemberInfoSqlParameter(property.GetValue(row), property));
+                SqlParameter parameter = this.__GetMemberInfoSqlParameter(property.GetValue(row), property);
+                if (parameter != null) {
+                    rowValues.Add(parameter);
+                }
             }
 
             return this.Value(
@@ -153,6 +162,10 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
         Column?         column           = memberInfo.GetCustomAttribute<Column>();
         ColumnDataType? columnDataType   = null;
         SqlDbType?      dbColumnDataType = null;
+
+        if (memberInfo.IsSystemColumn()) {
+            return null;
+        }
 
         if (value == null) {
             value = DBNull.Value;
