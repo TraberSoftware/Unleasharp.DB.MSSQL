@@ -23,7 +23,7 @@ dotnet add package Unleasharp.DB.MSSQL
 
 ### PackageReference (Manual)
 ```xml
-<PackageReference Include="Unleasharp.DB.MSSQL" Version="1.5.3" />
+<PackageReference Include="Unleasharp.DB.MSSQL" Version="1.5.4" />
 ```
 
 ## 🎯 Features
