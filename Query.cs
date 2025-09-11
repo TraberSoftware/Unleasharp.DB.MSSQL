@@ -128,7 +128,7 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
             );
         }
 
-        return this.Value(row.ToDynamicDictionary());
+        return this.Value(row.ToDynamicDictionaryForInsert());
     }
 
     /// <inheritdoc/>
