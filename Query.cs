@@ -598,6 +598,10 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
         From<Query> from = this.QueryFrom.FirstOrDefault();
 
         if (from != null) {
+            if (this.QueryOnConflict != OnInsertConflict.NONE) {
+                return $"SET IDENTITY_INSERT {from.Table} ON; MERGE {from.Table} AS target";
+            }
+
             return 
                 $"INSERT INTO {from.Table} ({string.Join(',', this.QueryColumns)})" +
                 ((!string.IsNullOrWhiteSpace(QueryOutputInserted) ? $" OUTPUT INSERTED.{QueryOutputInserted}" : ""))
@@ -642,7 +646,53 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
             }
         }
 
+        if (this.QueryOnConflict != OnInsertConflict.NONE) {
+            return $"USING (VALUES {string.Join(',', rendered)}) AS source({string.Join(',', this.QueryColumns)})";
+        }
+
         return (rendered.Count > 0 ? $"VALUES {string.Join(',', rendered)}" : "");
+    }
+
+    /// <inheritdoc/>
+    protected override string _RenderInsertOnConflictSentence() {
+        List<string> updateSetFields = new List<string>();
+        List<string> insertFields    = new List<string>();
+        List<string> insertValues    = new List<string>();
+        
+        if (this.QueryOnConflict == OnInsertConflict.NONE) {
+            return string.Empty;
+        }
+
+        if (this.QueryColumns != null) {
+            foreach (string column in this.QueryColumns) {
+                insertFields   .Add($"{Query.FieldDelimiterInit}{column}{Query.FieldDelimiterEnd}");
+                insertValues   .Add(                                                              $"source.{Query.FieldDelimiterInit}{column}{Query.FieldDelimiterEnd}");
+                if (column == this.QueryOnConflictKeyColumn) {
+                    continue;
+                }
+                updateSetFields.Add($"{Query.FieldDelimiterInit}{column}{Query.FieldDelimiterEnd} = source.{Query.FieldDelimiterInit}{column}{Query.FieldDelimiterEnd}");
+            }
+        }
+        if (this.QueryOnConflict == OnInsertConflict.IGNORE) {
+            updateSetFields = new List<string> { $"{Query.FieldDelimiterInit}{this.QueryOnConflictKeyColumn}{Query.FieldDelimiterEnd} = source.{Query.FieldDelimiterInit}{this.QueryOnConflictKeyColumn}{Query.FieldDelimiterEnd}" };
+        }
+
+        return 
+            $"ON " + 
+            $"target.{Query.FieldDelimiterInit}{this.QueryOnConflictKeyColumn}{Query.FieldDelimiterEnd} = " +
+            $"source.{Query.FieldDelimiterInit}{this.QueryOnConflictKeyColumn}{Query.FieldDelimiterEnd} " +
+            (this.QueryOnConflict == OnInsertConflict.UPDATE ?
+            $"WHEN MATCHED THEN " +
+            $"UPDATE SET " +
+                string.Join(',', updateSetFields)
+                : 
+                " "
+            ) + 
+            $"WHEN NOT MATCHED THEN " +
+            $"INSERT ({string.Join(',', insertFields)}) " +
+            $"VALUES ({string.Join(',', insertValues)})" + 
+            ";"
+        ;
     }
 
     /// <inheritdoc/>
