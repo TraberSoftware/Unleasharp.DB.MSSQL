@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -76,11 +75,10 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
     /// <inheritdoc/>
     public override Query Set<T>(Expression<Func<T, object>> expression, dynamic value, bool escape = true) {
         Type   tableType         = typeof(T);
-        string dbColumnName      = ExpressionHelper.ExtractColumnName<T>(expression);
-        string classPropertyName = ExpressionHelper.ExtractClassFieldName<T>(expression);
-        string tableName         = tableType.GetTableName();
+        string classPropertyName = ExpressionHelper.ExtractClassMemberName<T>(expression);
+        string dbColumnName      = ReflectionCache.GetColumnName<T>(expression);
 
-        MemberInfo member    = tableType.GetMember(classPropertyName).FirstOrDefault();
+        MemberInfo member = tableType.GetMember(classPropertyName).FirstOrDefault();
 
         if (member == null) {
             return this.Set(dbColumnName, value, escape);
@@ -391,7 +389,7 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
     /// cref="WhereIn{T}.Values"/> collection is null or empty.</returns>
     public string RenderWhereIn(WhereIn<Query> fragment) {
         if (fragment.Subquery != null) {
-            return $"{fragment.Field.Render()} IN ({fragment.Subquery.WithParentQuery(this.ParentQuery != null ? this.ParentQuery : this).Render()})";
+            return $"{fragment.Field.Render()} {fragment.Comparer.GetDescription()} ({fragment.Subquery.WithParentQuery(this.ParentQuery != null ? this.ParentQuery : this).Render()})";
         }
 
         if (fragment.Values == null || fragment.Values.Count == 0) {
@@ -797,14 +795,14 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
             if (!this.__TableHasPrimaryKeyColumn(tableType)) {
                 definitions.Add(
                     $"CONSTRAINT {Query.FieldDelimiterInit}pk_{pKey.Name}{Query.FieldDelimiterEnd} PRIMARY KEY" +
-                    $"({string.Join(", ", pKey.Columns.Select(column => $"{Query.FieldDelimiterInit}{tableType.GetColumnName(column)}{Query.FieldDelimiterEnd}"))})"
+                    $"({string.Join(", ", pKey.Columns.Select(column => $"{Query.FieldDelimiterInit}{ReflectionCache.GetColumnName(tableType, column)}{Query.FieldDelimiterEnd}"))})"
                 );
             }
         }
         foreach (UniqueKey uKey in tableType.GetCustomAttributes<UniqueKey>()) {
             definitions.Add(
                 $"CONSTRAINT {Query.FieldDelimiterInit}uk_{uKey.Name}{Query.FieldDelimiterEnd} UNIQUE " +
-                $"({string.Join(", ", uKey.Columns.Select(column => $"{Query.FieldDelimiterInit}{tableType.GetColumnName(column)}{Query.FieldDelimiterEnd}"))})"
+                $"({string.Join(", ", uKey.Columns.Select(column => $"{Query.FieldDelimiterInit}{ReflectionCache.GetColumnName(tableType, column)}{Query.FieldDelimiterEnd}"))})"
             );
         }
         foreach (ForeignKey fKey in tableType.GetCustomAttributes<ForeignKey>()) {
