@@ -427,10 +427,7 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
             }
         }
         else {
-            // If this is a UNION query, avoid adding * to the select
-            if (this.QueryType != QueryType.SELECT_UNION) {
-                rendered.Add("*");
-            }
+            rendered.Add("*");
         }
 
         return rendered.Count > 0 ? $"SELECT {(this.QueryDistinct ? "DISTINCT " : "")}{string.Join(',', rendered)}" : "";
@@ -936,30 +933,33 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
     /// <exception cref="NotSupportedException">Thrown if the specified <paramref name="type"/> is not supported by SQL Server or is <c>null</c>.</exception>
     public string GetColumnDataTypeString(ColumnDataType? type) {
         return type switch {
-            ColumnDataType.Boolean   => "BIT",
-            ColumnDataType.Int16     => "SMALLINT",
-            ColumnDataType.Int       => "INT",
-            ColumnDataType.Int32     => "INT",
-            ColumnDataType.Int64     => "BIGINT",
-            ColumnDataType.UInt16    => "SMALLINT",
-            ColumnDataType.UInt      => "INT",
-            ColumnDataType.UInt32    => "INT",
-            ColumnDataType.UInt64    => "BIGINT",
-            ColumnDataType.Decimal   => "DECIMAL",
-            ColumnDataType.Float     => "REAL",
-            ColumnDataType.Double    => "FLOAT",
-            ColumnDataType.Text      => "NVARCHAR",
-            ColumnDataType.Char      => "CHAR",
-            ColumnDataType.Varchar   => "NVARCHAR",
-            ColumnDataType.Enum      => "NVARCHAR",
-            ColumnDataType.Date      => "DATE",
-            ColumnDataType.DateTime  => "DATETIME2",
-            ColumnDataType.Time      => "TIME",
-            ColumnDataType.Timestamp => "DATETIMEOFFSET",
-            ColumnDataType.Binary    => "VARBINARY",
-            ColumnDataType.Guid      => "UNIQUEIDENTIFIER",
-            ColumnDataType.Json      => "NVARCHAR", // SQL Server 2016+ supports JSON functions but no native type
-            ColumnDataType.Xml       => "XML",
+            ColumnDataType.Boolean    => "BIT",
+            ColumnDataType.Int16      => "SMALLINT",
+            ColumnDataType.Int        => "INT",
+            ColumnDataType.Int32      => "INT",
+            ColumnDataType.Int64      => "BIGINT",
+            ColumnDataType.UInt16     => "SMALLINT",
+            ColumnDataType.UInt       => "INT",
+            ColumnDataType.UInt32     => "INT",
+            ColumnDataType.UInt64     => "BIGINT",
+            ColumnDataType.Decimal    => "DECIMAL",
+            ColumnDataType.Float      => "REAL",
+            ColumnDataType.Double     => "FLOAT",
+            ColumnDataType.TinyText   => "NVARCHAR",
+            ColumnDataType.Text       => "NVARCHAR",
+            ColumnDataType.MediumText => "NVARCHAR",
+            ColumnDataType.LongText   => "NVARCHAR",
+            ColumnDataType.Char       => "CHAR",
+            ColumnDataType.Varchar    => "NVARCHAR",
+            ColumnDataType.Enum       => "NVARCHAR",
+            ColumnDataType.Date       => "DATE",
+            ColumnDataType.DateTime   => "DATETIME2",
+            ColumnDataType.Time       => "TIME",
+            ColumnDataType.Timestamp  => "DATETIMEOFFSET",
+            ColumnDataType.Binary     => "VARBINARY",
+            ColumnDataType.Guid       => "UNIQUEIDENTIFIER",
+            ColumnDataType.Json       => "NVARCHAR", // SQL Server 2016+ supports JSON functions but no native type
+            ColumnDataType.Xml        => "XML",
 
             _ => throw new NotSupportedException($"MSSQL does not support {type}")
         };
@@ -976,30 +976,33 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
     /// if the mapping is not defined.</returns>
     public SqlDbType? GetSQLDataType(ColumnDataType type) {
         return type switch {
-            ColumnDataType.Boolean   => SqlDbType.Bit,
-            ColumnDataType.Int16     => SqlDbType.SmallInt,
-            ColumnDataType.Int       => SqlDbType.Int,
-            ColumnDataType.Int32     => SqlDbType.Int,
-            ColumnDataType.Int64     => SqlDbType.BigInt,
-            ColumnDataType.UInt16    => SqlDbType.SmallInt,
-            ColumnDataType.UInt32    => SqlDbType.Int,
-            ColumnDataType.UInt      => SqlDbType.BigInt,
-            ColumnDataType.UInt64    => SqlDbType.BigInt,
-            ColumnDataType.Decimal   => SqlDbType.Decimal,
-            ColumnDataType.Float     => SqlDbType.Real,
-            ColumnDataType.Double    => SqlDbType.Float,
-            ColumnDataType.Text      => SqlDbType.NVarChar,
-            ColumnDataType.Char      => SqlDbType.Char,
-            ColumnDataType.Varchar   => SqlDbType.NVarChar,
-            ColumnDataType.Enum      => SqlDbType.NVarChar,
-            ColumnDataType.Date      => SqlDbType.Date,
-            ColumnDataType.DateTime  => SqlDbType.DateTime2,
-            ColumnDataType.Time      => SqlDbType.Time,
-            ColumnDataType.Timestamp => SqlDbType.DateTimeOffset,
-            ColumnDataType.Binary    => SqlDbType.VarBinary,
-            ColumnDataType.Guid      => SqlDbType.UniqueIdentifier,
-            ColumnDataType.Json      => SqlDbType.NVarChar,
-            ColumnDataType.Xml       => SqlDbType.Xml,
+            ColumnDataType.Boolean    => SqlDbType.Bit,
+            ColumnDataType.Int16      => SqlDbType.SmallInt,
+            ColumnDataType.Int        => SqlDbType.Int,
+            ColumnDataType.Int32      => SqlDbType.Int,
+            ColumnDataType.Int64      => SqlDbType.BigInt,
+            ColumnDataType.UInt16     => SqlDbType.SmallInt,
+            ColumnDataType.UInt32     => SqlDbType.Int,
+            ColumnDataType.UInt       => SqlDbType.BigInt,
+            ColumnDataType.UInt64     => SqlDbType.BigInt,
+            ColumnDataType.Decimal    => SqlDbType.Decimal,
+            ColumnDataType.Float      => SqlDbType.Real,
+            ColumnDataType.Double     => SqlDbType.Float,
+            ColumnDataType.TinyText   => SqlDbType.NVarChar,
+            ColumnDataType.Text       => SqlDbType.NVarChar,
+            ColumnDataType.MediumText => SqlDbType.NVarChar,
+            ColumnDataType.LongText   => SqlDbType.NVarChar,
+            ColumnDataType.Char       => SqlDbType.Char,
+            ColumnDataType.Varchar    => SqlDbType.NVarChar,
+            ColumnDataType.Enum       => SqlDbType.NVarChar,
+            ColumnDataType.Date       => SqlDbType.Date,
+            ColumnDataType.DateTime   => SqlDbType.DateTime2,
+            ColumnDataType.Time       => SqlDbType.Time,
+            ColumnDataType.Timestamp  => SqlDbType.DateTimeOffset,
+            ColumnDataType.Binary     => SqlDbType.VarBinary,
+            ColumnDataType.Guid       => SqlDbType.UniqueIdentifier,
+            ColumnDataType.Json       => SqlDbType.NVarChar,
+            ColumnDataType.Xml        => SqlDbType.Xml,
 
             _ => null
         };
