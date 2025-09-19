@@ -427,7 +427,10 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
             }
         }
         else {
-            rendered.Add("*");
+            // If this is a UNION query, avoid adding * to the select
+            if (this.QueryType != QueryType.SELECT_UNION) {
+                rendered.Add("*");
+            }
         }
 
         return rendered.Count > 0 ? $"SELECT {(this.QueryDistinct ? "DISTINCT " : "")}{string.Join(',', rendered)}" : "";
@@ -543,6 +546,7 @@ public class Query : Unleasharp.DB.Base.Query<Query> {
         List<string> rendered = new List<string>();
         if (this.QueryLimit != null) {
             return 
+                (this.QueryOrder.Count == 0 ? "ORDER BY(SELECT NULL) " : "")  +
                 $"OFFSET     {this.QueryLimit.Offset} ROWS " + 
                 $"FETCH NEXT {this.QueryLimit.Count } ROWS ONLY"
             ;
