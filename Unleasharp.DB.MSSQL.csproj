@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <AssemblyVersion>1.7.1.0</AssemblyVersion>
-    <FileVersion>1.7.1</FileVersion>
-    <VersionPrefix>1.7.1</VersionPrefix>
+    <AssemblyVersion>1.8.0.0</AssemblyVersion>
+    <FileVersion>1.8.0</FileVersion>
+    <VersionPrefix>1.8.0</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,6 +26,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
-    <PackageReference Include="Unleasharp.DB.Base" Version="1.7.1" />
+    <PackageReference Include="Unleasharp.DB.Base" Version="1.8.0" />
   </ItemGroup>
 </Project>
